@@ -12,7 +12,7 @@ version 0.15.1.
 ## Build & development
 
 Cd to the project directory, run `npm install` and `bower install`.
-Run `grunt build` for building and `grunt serve` for preview.
+Run `grunt` for building and `grunt serve` for preview (or grunt `serve:dist` to see the distribution version).
 
 ## Testing
 
