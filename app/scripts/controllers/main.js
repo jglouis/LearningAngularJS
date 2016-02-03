@@ -9,11 +9,7 @@
  */
  angular.module('learningAngularJsApp')
    .controller('MainCtrl', function ($scope) {
-     $scope.todos = [
-       {name: 'Item 1'},
-       {name: 'Item 2'},
-       {name: 'Item 3'},
-     ];
+     $scope.todos = [];
      $scope.addTodo = function () {
        $scope.todos.push({name: $scope.todoName});
        $scope.todoName = '';
