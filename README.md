@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jglouis/LearningAngularJS.svg?branch=master)](https://travis-ci.org/jglouis/LearningAngularJS)
+
 # learning-angular-js
 
 This project is generated with [yo angular generator](https://github.com/yeoman/generator-angular)
