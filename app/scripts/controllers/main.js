@@ -5,7 +5,7 @@
  * @name learningAngularJsApp.controller:MainCtrl
  * @description
  * # MainCtrl
- * Controller of the learningAngularJsApp
+ * Controller responsible for the TODO list
  */
  angular.module('learningAngularJsApp')
    .controller('MainCtrl', function ($scope, localStorageService) {
