@@ -31,6 +31,11 @@ angular
         controller: 'AboutCtrl',
         controllerAs: 'about'
       })
+      .when('/hexmap', {
+        templateUrl: 'views/hexmap.html',
+        controller: 'HexmapCtrl',
+        controllerAs: 'hexmap'
+      })
       .otherwise({
         redirectTo: '/'
       });
