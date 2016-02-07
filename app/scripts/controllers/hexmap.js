@@ -9,11 +9,6 @@
  */
 angular.module('learningAngularJsApp')
   .controller('HexmapCtrl', function () {
-    this.awesomeThings = [
-      'HTML5 Boilerplate',
-      'AngularJS',
-      'Karma'
-    ];
   });
 
   // Hex math defined here: http://blog.ruslans.com/2011/02/hexagonal-grid-math.html
@@ -45,23 +40,30 @@ angular.module('learningAngularJsApp')
           if (this.Distance(a,b) > 3){
             continue;
           }
-
-          var y = this.radius * Math.sqrt(3) * (u + v/2);
-          var x = this.radius * 3/2 * v;
-
-          x += originX;
-          y += originY;
-
-          this.drawHex(x, y, '#ddd', '(' + u + ',' + v + ')');
+          var pixel = this.hexToPixel(u,v);
+          this.drawHex(pixel[0], pixel[1], '#ddd', '(' + u + ',' + v + ')');
         }
       }
   };
 
-  HexagonGrid.prototype.drawHexAtColRow = function(column, row, color) {
-      var drawy = column % 2 === 0 ? (row * this.height) + this.canvasOriginY : (row * this.height) + this.canvasOriginY + (this.height / 2);
-      var drawx = (column * this.side) + this.canvasOriginX;
+  HexagonGrid.prototype.hexToPixel = function(u,v){
+    var y = this.radius * Math.sqrt(3) * (u + v/2);
+    var x = this.radius * 3/2 * v;
 
-      this.drawHex(drawx, drawy, color, '');
+    x += this.canvasOriginX;
+    y += this.canvasOriginY;
+
+    return [x, y];
+  };
+
+  HexagonGrid.prototype.pixelToHex = function(x, y){
+    x -= this.canvasOriginX;
+    y -= this.canvasOriginY;
+
+    var r = Math.round(x * 2/3 / this.radius);
+    var q = Math.round((-x / 3 + Math.sqrt(3)/3 * y) / this.radius);
+
+    return [q, r];
   };
 
   HexagonGrid.prototype.drawHex = function(x0, y0, fillColor, debugText) {
@@ -103,106 +105,20 @@ angular.module('learningAngularJsApp')
       }
   };
 
-  //Uses a grid overlay algorithm to determine hexagon location
-  //Left edge of grid has a test to acuratly determin correct hex
-  HexagonGrid.prototype.getSelectedTile = function(mouseX, mouseY) {
-
-  	var offSet = this.getRelativeCanvasOffset();
-
-      mouseX -= offSet.x;
-      mouseY -= offSet.y;
-
-      var column = Math.floor((mouseX) / this.side);
-      var row = Math.floor(
-          column % 2 === 0 ? Math.floor((mouseY) / this.height)
-              : Math.floor(((mouseY + (this.height * 0.5)) / this.height)) - 1);
-
-
-      //Test if on left side of frame
-      if (mouseX > (column * this.side) && mouseX < (column * this.side) + this.width - this.side) {
-
-
-          //Now test which of the two triangles we are in
-          //Top left triangle points
-          var p1 = {};
-          p1.x = column * this.side;
-          p1.y = column % 2 === 0 ? row * this.height
-              : (row * this.height) + (this.height / 2);
-
-          var p2 = {};
-          p2.x = p1.x;
-          p2.y = p1.y + (this.height / 2);
-
-          var p3 = {};
-          p3.x = p1.x + this.width - this.side;
-          p3.y = p1.y;
-
-          var mousePoint = {};
-          mousePoint.x = mouseX;
-          mousePoint.y = mouseY;
-
-          if (this.isPointInTriangle(mousePoint, p1, p2, p3)) {
-              column--;
-
-              if (column % 2 !== 0) {
-                  row--;
-              }
-          }
-
-          //Bottom left triangle points
-          var p4 = {};
-          p4 = p2;
-
-          var p5 = {};
-          p5.x = p4.x;
-          p5.y = p4.y + (this.height / 2);
-
-          var p6 = {};
-          p6.x = p5.x + (this.width - this.side);
-          p6.y = p5.y;
-
-          if (this.isPointInTriangle(mousePoint, p4, p5, p6)) {
-              column--;
-
-              if (column % 2 === 0) {
-                  row++;
-              }
-          }
-      }
-
-      return  { row: row, column: column };
-  };
-
-
-  HexagonGrid.prototype.sign = function(p1, p2, p3) {
-      return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
-  };
-
-  //TODO: Replace with optimized barycentric coordinate method
-  HexagonGrid.prototype.isPointInTriangle = function isPointInTriangle(pt, v1, v2, v3) {
-      var b1, b2, b3;
-
-      b1 = this.sign(pt, v1, v2) < 0.0;
-      b2 = this.sign(pt, v2, v3) < 0.0;
-      b3 = this.sign(pt, v3, v1) < 0.0;
-
-      return ((b1 === b2) && (b2 === b3));
-  };
-
   HexagonGrid.prototype.clickEvent = function (e) {
-      var mouseX = e.pageX;
-      var mouseY = e.pageY;
+      var mouseX = e.pageX - this.canvas.offsetLeft - Math.floor(this.width/2);
+      var mouseY = e.pageY - this.canvas.offsetTop - this.height/2;
 
       var localX = mouseX - this.canvasOriginX;
       var localY = mouseY - this.canvasOriginY;
 
-      var tile = this.getSelectedTile(localX, localY);
-      if (tile.column >= 0 && tile.row >= 0) {
-          var drawy = tile.column % 2 === 0 ? (tile.row * this.height) + this.canvasOriginY + 6 : (tile.row * this.height) + this.canvasOriginY + 6 + (this.height / 2);
-          var drawx = (tile.column * this.side) + this.canvasOriginX;
+      console.log({x: localX, y: localY});
+      var hex = this.pixelToHex(mouseX, mouseY);
+      console.log({u:hex[0], v:hex[1]});
 
-          this.drawHex(drawx, drawy - 6, 'rgba(110,110,70,0.3)', '');
-      }
+      var pixel = this.hexToPixel(hex[0],hex[1]);
+
+      this.drawHex(pixel[0], pixel[1], 'rgba(110,110,70,0.3)', '');
   };
 
   HexagonGrid.prototype.Distance = function(a, b){
